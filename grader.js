@@ -24,10 +24,26 @@ References:
 var fs = require('fs');
 var program = require('commander');
 var cheerio = require('cheerio');
+var restler = require('restler');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
 
+function dlRemoteFile(infile) {
+  console.log('running remote download function');
+  restler.get(infile).on('complete', function(result) {
+    console.log('restler download complete');
+    fs.writeFile('dl.html', result, function() {
+      console.log('fs write complete')
+      var checkJson = checkHtmlFile('dl.html', program.checks);
+      var outJson = JSON.stringify(checkJson, null, 4);
+      console.log(outJson);
+    });
+    //assertFileExists('dl.html');
+  });
+};
+
 var assertFileExists = function(infile) {
+  console.log(infile);
     var instr = infile.toString();
     if(!fs.existsSync(instr)) {
         console.log("%s does not exist. Exiting.", instr);
@@ -58,11 +74,23 @@ var checkHtmlFile = function(htmlfile, checksfile) {
 if(require.main == module) {
     program
         .option('-c, --checks <val>', 'Path to checks.json', assertFileExists, CHECKSFILE_DEFAULT)
-        .option('-f, --file ', 'Path to index.html', assertFileExists, HTMLFILE_DEFAULT)
+        .option('-f, --file <val>', 'Path to index.html', assertFileExists)//, HTMLFILE_DEFAULT)
+        .option('-u, --url <val>', 'URL to check')
         .parse(process.argv);
-    var checkJson = checkHtmlFile(program.file, program.checks);
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
+
+    if (program.url) {
+     console.log(program.url);
+     // string = program.url.toString();
+      dlRemoteFile(program.url);
+      //program.file = 'dl.html';
+      //var checkJson = checkHtmlFile(file, program.checks)
+    }
+    else if (program.file) {
+      console.log(program.file);
+      var checkJson = checkHtmlFile(program.file, program.checks);
+      var outJson = JSON.stringify(checkJson, null, 4);
+      console.log(outJson);
+    }
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
