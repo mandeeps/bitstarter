@@ -6,8 +6,8 @@ var app = express.createServer(express.logger());
 app.use('/js', express.static(__dirname, '/js'));
 app.use('/css', express.static(__dirname, '/css'));
 
+var text = fs.readFileSync('index.html');
 app.get('/', function(request, response) {
-  var text = fs.readFile('index.html');
   response.writeHead(200);
   response.write(text);
   response.end();
