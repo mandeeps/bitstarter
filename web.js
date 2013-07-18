@@ -3,10 +3,11 @@ var fs = require('fs');
 
 var app = express.createServer(express.logger());
 
-var text = fs.readFileSync('index.html');
+app.use('/js', express.static(__dirname, '/js'));
+app.use('/css', express.static(__dirname, '/css'));
 
 app.get('/', function(request, response) {
-  //response.('Hello World 2!');
+  var text = fs.readFile('index.html');
   response.writeHead(200);
   response.write(text);
   response.end();
